@@ -6,15 +6,9 @@
     <title>Form Harian Digital</title>
     
     <style>
+        /* --- CSS DASAR --- */
         * { box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #e0e0e0; margin: 0; padding: 20px; }
-        
-        /* Error Box untuk Diagnosa */
-        #error-log {
-            background: #ffcccc; color: #cc0000; padding: 15px; border: 1px solid red;
-            margin-bottom: 20px; display: none; font-weight: bold; border-radius: 5px;
-        }
-
         .container { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1200px; margin: 0 auto; }
 
         /* INPUT PANEL */
@@ -26,7 +20,6 @@
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
         input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         
-        /* Radio Box */
         .radio-box {
             background: #f1f1f1; padding: 10px; border-radius: 4px;
             display: flex; gap: 15px; margin-bottom: 5px; border: 1px solid #ddd;
@@ -73,7 +66,6 @@
         .btn-proses:hover { background: #004494; }
         .btn-red { background: #dc3545; width: auto; font-size: 11px; padding: 5px 10px; }
         
-        /* Loader */
         .spinner {
             display: inline-block; width: 15px; height: 15px; margin-right: 10px;
             border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
@@ -92,11 +84,8 @@
 </head>
 <body>
 
-<div id="error-log"></div>
-
 <form name="submit-to-google-sheet">
 <div class="container">
-    
     <div class="input-panel">
         <h2 style="margin-top:0; border-bottom:2px solid #0056b3; padding-bottom:10px;">Input Data</h2>
         
@@ -241,52 +230,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
-// --- DETEKSI ERROR ---
-window.onerror = function(message, source, lineno, colno, error) {
-    const log = document.getElementById('error-log');
-    log.style.display = 'block';
-    log.innerHTML += `ERROR: ${message} (Line: ${lineno})<br>`;
-};
+    // --- TEMPEL LINK SCRIPT BARU KAMU DI SINI ---
+    const scriptURL = 'PASTE_LINK_GOOGLE_SCRIPT_DISINI';
 
-// --- LOGIKA UTAMA ---
-try {
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwr3wRA7cVd1ir1wr0BAlHMc2v8I6AHtE5Wx7GFxPB5xgwqaYoIYHuyudsCRu38Mk58/exec';
-    
     const pads = [];
     const ids = ['c1', 'c2', 'c3'];
+    const form = document.forms['submit-to-google-sheet'];
     
-    // Tunggu Halaman Load Sempurna
     window.addEventListener('load', () => {
-        // Init Signature
-        if(typeof SignaturePad === 'undefined') {
-            throw new Error("Gagal memuat Library Tanda Tangan. Cek Koneksi Internet.");
-        }
-
         ids.forEach((id, idx) => {
             const cvs = document.getElementById(id);
-            if(cvs) {
-                cvs.width = cvs.offsetWidth; cvs.height = cvs.offsetHeight;
-                const pad = new SignaturePad(cvs, { backgroundColor: 'rgba(255,255,255,0)' });
-                pad.addEventListener("endStroke", () => updateImg(idx));
-                pads.push(pad);
-            }
+            cvs.width = cvs.offsetWidth; cvs.height = cvs.offsetHeight;
+            const pad = new SignaturePad(cvs, { backgroundColor: 'rgba(255,255,255,0)' });
+            pad.addEventListener("endStroke", () => updateImg(idx));
+            pads.push(pad);
         });
         
-        // Init Event Listener Input
         document.querySelectorAll('input, textarea').forEach(el => {
             el.addEventListener('input', render);
             el.addEventListener('change', render);
         });
-
-        // Init Form Submit
-        const form = document.forms['submit-to-google-sheet'];
-        if(form) {
-            form.addEventListener('submit', handleFormSubmit);
-        }
     });
 
-    // --- FUNGSI ---
-    window.setTeam = function(t) {
+    function setTeam(t) {
         const ds=document.getElementById('in_ds'), del=document.getElementById('in_del');
         const tds=document.getElementById('txt_ds'), tdel=document.getElementById('txt_del');
         if(t=='ds'){
@@ -299,14 +265,11 @@ try {
         render();
     }
 
-    window.clearPad = function(i) { 
-        if(pads[i]) pads[i].clear(); 
-        document.getElementById('img'+(i+1)).style.visibility='hidden'; 
-    }
+    function clearPad(i) { pads[i].clear(); document.getElementById('img'+(i+1)).style.visibility='hidden'; }
     
     function updateImg(i) {
         const img = document.getElementById('img'+(i+1));
-        if(pads[i] && !pads[i].isEmpty()){ 
+        if(!pads[i].isEmpty()){ 
             const d = pads[i].toDataURL();
             img.src = d; 
             img.style.visibility='visible'; 
@@ -341,11 +304,33 @@ try {
         } else { ot.innerText=""; ol.innerText=""; }
     }
 
-    function handleFormSubmit(e) {
+    // --- FUNGSI RESET FORM ---
+    function resetAll() {
+        // 1. Reset Input HTML
+        form.reset();
+        
+        // 2. Bersihkan Tanda Tangan
+        pads.forEach((pad, idx) => {
+            pad.clear();
+            document.getElementById('img'+(idx+1)).style.visibility = 'hidden';
+            document.getElementById('img'+(idx+1)).src = '';
+        });
+        
+        // 3. Reset Preview (Panggil render ulang agar kosong)
+        render();
+
+        // 4. Reset coretan team
+        document.getElementById('in_ds').disabled = true;
+        document.getElementById('in_del').disabled = true;
+        document.getElementById('txt_ds').classList.remove('text-coret');
+        document.getElementById('txt_del').classList.remove('text-coret');
+    }
+
+    form.addEventListener('submit', e => {
         e.preventDefault();
+        
         const btn = document.getElementById('btn-proses');
         const originalText = btn.innerText;
-        const form = document.forms['submit-to-google-sheet'];
         
         btn.innerHTML = '<span class="spinner"></span> MENYIMPAN...';
         btn.disabled = true;
@@ -356,12 +341,11 @@ try {
                 downloadPDF(btn, originalText);
             })
             .catch(error => {
-                alert("Gagal menyimpan ke Database! Cek koneksi internet.");
-                console.error('Error!', error.message);
+                alert("Gagal menyimpan! Cek koneksi internet.");
                 btn.innerText = originalText;
                 btn.disabled = false;
             });
-    }
+    });
 
     function downloadPDF(btn, originalText) {
         const el = document.getElementById('page-a4');
@@ -375,28 +359,20 @@ try {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        if(typeof html2pdf === 'undefined') {
-             alert("Library PDF belum termuat. Coba refresh halaman.");
-             btn.innerText = originalText;
-             btn.disabled = false;
-             return;
-        }
-
         html2pdf().set(opt).from(el).save().then(() => {
-            btn.innerText = "SUKSES! TERSIMPAN";
+            btn.innerText = "SUKSES!";
             btn.style.backgroundColor = "#28a745";
+            
             setTimeout(() => {
+                // RESET FORM SETELAH 3 DETIK
+                resetAll();
+                
                 btn.innerText = originalText;
                 btn.style.backgroundColor = ""; 
                 btn.disabled = false;
             }, 3000);
         });
     }
-
-} catch(e) {
-    document.getElementById('error-log').style.display = 'block';
-    document.getElementById('error-log').innerHTML += "CRITICAL ERROR: " + e.message;
-}
 </script>
 
 </body>
