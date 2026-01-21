@@ -20,6 +20,7 @@
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
         input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         
+        /* Radio Box */
         .radio-box {
             background: #f1f1f1; padding: 10px; border-radius: 4px;
             display: flex; gap: 15px; margin-bottom: 5px; border: 1px solid #ddd;
@@ -73,6 +74,27 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* --- SETTING KHUSUS HP (MOBILE) --- */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .input-panel { min-width: 100%; padding: 15px; }
+            
+            /* Agar Radio Button Team tersusun ke bawah di HP */
+            .radio-box {
+                flex-direction: column; /* Susun Vertikal */
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .radio-box label {
+                width: 100%; /* Area pencet luas */
+                padding: 5px 0;
+            }
+            
+            /* Agar tanggal tidak himpit-himpitan */
+            .tgl-wrapper { flex-wrap: wrap; }
+            .tgl-wrapper input { width: 100%; margin-bottom: 5px; }
+        }
+
         @media print {
             @page { size: A4 portrait; margin: 0; }
             body { background: white; padding: 0; margin: 0; }
@@ -108,7 +130,7 @@
 
         <div class="form-group">
             <label>Tanggal Pemakaian</label>
-            <div style="display: flex; gap: 10px;">
+            <div class="tgl-wrapper" style="display: flex; gap: 10px;">
                 <input type="date" id="in_tgl1" name="Tanggal Mulai" required>
                 <input type="date" id="in_tgl2" name="Tanggal Selesai" required>
             </div>
@@ -231,7 +253,7 @@
 
 <script>
     // --- TEMPEL LINK SCRIPT BARU KAMU DI SINI ---
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxGFvWmeyDk8QAHq5U91Dddt7fLI94q2maYz4OKkNdoLVZsebBwIrJrp6g90FHSeNm4/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwr3wRA7cVd1ir1wr0BAlHMc2v8I6AHtE5Wx7GFxPB5xgwqaYoIYHuyudsCRu38Mk58/exec';
 
     const pads = [];
     const ids = ['c1', 'c2', 'c3'];
@@ -304,22 +326,14 @@
         } else { ot.innerText=""; ol.innerText=""; }
     }
 
-    // --- FUNGSI RESET FORM ---
     function resetAll() {
-        // 1. Reset Input HTML
         form.reset();
-        
-        // 2. Bersihkan Tanda Tangan
         pads.forEach((pad, idx) => {
             pad.clear();
             document.getElementById('img'+(idx+1)).style.visibility = 'hidden';
             document.getElementById('img'+(idx+1)).src = '';
         });
-        
-        // 3. Reset Preview (Panggil render ulang agar kosong)
         render();
-
-        // 4. Reset coretan team
         document.getElementById('in_ds').disabled = true;
         document.getElementById('in_del').disabled = true;
         document.getElementById('txt_ds').classList.remove('text-coret');
@@ -362,11 +376,8 @@
         html2pdf().set(opt).from(el).save().then(() => {
             btn.innerText = "SUKSES!";
             btn.style.backgroundColor = "#28a745";
-            
             setTimeout(() => {
-                // RESET FORM SETELAH 3 DETIK
                 resetAll();
-                
                 btn.innerText = originalText;
                 btn.style.backgroundColor = ""; 
                 btn.disabled = false;
@@ -377,4 +388,3 @@
 
 </body>
 </html>
-
