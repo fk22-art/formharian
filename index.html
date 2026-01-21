@@ -2,31 +2,44 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Harian Digital</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Form Harian Digital</title>
     
     <style>
         /* --- CSS DASAR --- */
         * { box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #e0e0e0; margin: 0; padding: 20px; }
-        .container { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1200px; margin: 0 auto; }
+        
+        /* Container Utama */
+        .container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
 
         /* INPUT PANEL */
         .input-panel {
-            flex: 1; min-width: 320px; background: white; padding: 20px;
-            border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: fit-content;
+            flex: 1; 
+            min-width: 320px; 
+            background: white; 
+            padding: 20px;
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            height: fit-content;
         }
+        
         .form-group { margin-bottom: 12px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
-        input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
         
-        /* Radio Box */
+        /* Radio Box Standard */
         .radio-box {
             background: #f1f1f1; padding: 10px; border-radius: 4px;
             display: flex; gap: 15px; margin-bottom: 5px; border: 1px solid #ddd;
         }
         .radio-box label { font-weight: normal; cursor: pointer; display: flex; align-items: center; }
-        .radio-box input { margin-right: 5px; }
+        .radio-box input { margin-right: 5px; transform: scale(1.2); }
 
         /* PREVIEW PANEL */
         .preview-panel {
@@ -74,27 +87,46 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- SETTING KHUSUS HP (MOBILE) --- */
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .input-panel { min-width: 100%; padding: 15px; }
+        /* --- MODE RESPONSIF (HP & TABLET) --- */
+        /* Naikkan breakpoint ke 900px agar tablet & HP besar kena dampaknya */
+        @media (max-width: 900px) {
+            body { padding: 10px; margin: 0; }
+            .container { flex-direction: column; width: 100%; gap: 10px; }
             
-            /* Agar Radio Button Team tersusun ke bawah di HP */
+            .input-panel { 
+                width: 100%; 
+                min-width: 0; /* Override min-width */
+                padding: 15px;
+            }
+
+            .preview-panel {
+                width: 100%;
+                padding: 10px;
+                background: #333; /* Gelap dikit biar beda */
+            }
+
+            /* Radio Button jadi Kotak Vertikal di HP */
             .radio-box {
-                flex-direction: column; /* Susun Vertikal */
-                align-items: flex-start;
+                flex-direction: column; /* Susun ke bawah */
                 gap: 10px;
+                background: transparent; border: none; padding: 0;
             }
             .radio-box label {
-                width: 100%; /* Area pencet luas */
-                padding: 5px 0;
+                width: 100%;
+                background: #f8f9fa;
+                padding: 12px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                font-size: 14px;
             }
-            
-            /* Agar tanggal tidak himpit-himpitan */
+            .radio-box input { margin-right: 10px; }
+
+            /* Tanggal susun ke bawah */
             .tgl-wrapper { flex-wrap: wrap; }
             .tgl-wrapper input { width: 100%; margin-bottom: 5px; }
         }
 
+        /* --- MODE PRINT --- */
         @media print {
             @page { size: A4 portrait; margin: 0; }
             body { background: white; padding: 0; margin: 0; }
@@ -108,6 +140,7 @@
 
 <form name="submit-to-google-sheet">
 <div class="container">
+    
     <div class="input-panel">
         <h2 style="margin-top:0; border-bottom:2px solid #0056b3; padding-bottom:10px;">Input Data</h2>
         
@@ -252,7 +285,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
-    // --- TEMPEL LINK SCRIPT BARU KAMU DI SINI ---
+    // --- LINK SCRIPT KAMU ---
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwr3wRA7cVd1ir1wr0BAlHMc2v8I6AHtE5Wx7GFxPB5xgwqaYoIYHuyudsCRu38Mk58/exec';
 
     const pads = [];
@@ -326,6 +359,7 @@
         } else { ot.innerText=""; ol.innerText=""; }
     }
 
+    // --- FUNGSI RESET FORM ---
     function resetAll() {
         form.reset();
         pads.forEach((pad, idx) => {
@@ -333,7 +367,7 @@
             document.getElementById('img'+(idx+1)).style.visibility = 'hidden';
             document.getElementById('img'+(idx+1)).src = '';
         });
-        render();
+        render(); // Kosongkan preview
         document.getElementById('in_ds').disabled = true;
         document.getElementById('in_del').disabled = true;
         document.getElementById('txt_ds').classList.remove('text-coret');
@@ -377,7 +411,7 @@
             btn.innerText = "SUKSES!";
             btn.style.backgroundColor = "#28a745";
             setTimeout(() => {
-                resetAll();
+                resetAll(); // RESET FORM SETELAH 3 DETIK
                 btn.innerText = originalText;
                 btn.style.backgroundColor = ""; 
                 btn.disabled = false;
